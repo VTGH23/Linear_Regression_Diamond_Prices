@@ -1,0 +1,552 @@
+---
+title: "Draft4_P1_STAT6021"
+author: 'Group 8: Austin Rivera, Victor Teelucksingh, Wilmer Maldonado'
+date: "2023-03-29"
+output: html_document
+---
+
+# Section 1
+
+### Executive Summary
+
+Diamonds are graded based off the 4Cs--color, clarity, cut, and carat, which are the industry standards for assessing the quality and value of a diamond. Out of the 4Cs, carat size has the largest impact on the price of diamonds in the current market. Our study found that for a 1% increase in carat size, you can expect diamond price to increase by nearly 2%. Moreover, the data lacks evidence supporting claims to "buy shy" (i.e., buying diamonds with a weight slightly below the closest half and whole number carat for the best value) because we see an exponentially increasing price as carat size increases, without any significant steps in price at .5 and 1 carat increments.
+
+Considering the other elements of the 4Cs, Blue Nile claims that cut is the most important, although we found that cut does not have a significant impact on diamond price. While there is some discernible difference in price across cut grades for very small carat diamonds, cut has a diminishing effect on price as carat size increases, with no discernible difference in price between cut grades for larger carat diamonds. We found that the impact of color on diamond price has an opposite effect--color has an increasing effect on price as carat size increases. This leads to a small carat diamonds being similarly priced across color grades and larger carat diamonds having a significant difference in diamond prices across color grades.
+
+Blue Nile claims that clarity is less important than a diamond's cut or color, but the data suggests that clarity has a larger impact on diamond price than either cut or color. In general, higher clarity grades are associated with higher diamond prices across carat size, with the effect being more pronounced for medium to large carat size diamonds. However, we found that VS and VVS grade diamonds are similarly priced across carat sizes, contradicting Blue Nile's claim that VS and SI are the best value for diamond clarity.
+
+<br>
+
+# Section 2
+
+## **2.1 Data and Variable Descriptions**
+
+The Blue Nile dataset contains a list of 1214 diamonds, each being identified/categorized by price, carat weight, cut, clarity, and color, where each record is for a specific diamond for sale. Diamond info has been extracted from Blue Nile product offerings and other unknown internet sources. It is essential to categorize each diamond by their carat weight, cut, clarity, and color because these four variables, also known as the 4C's, contribute to the determination of each stone's price.
+
+Below are the in-depth variable descriptions of carat weight, cut, color, clarity and price:
+
+<br>
+
+#### **Price:**
+
+The market-listed monetary value of each diamond, assumed currency, U.S. dollars, since Blue Nile is a U.S. based company.
+
+<br>
+
+#### **Carat weight:**
+
+An objective measurement for the weight of a diamond. 1 carat is equal to 200 mg of a diamond.
+
+<br>
+
+#### **Cut:**
+
+Refers to how well-proportioned the dimensions and how well-positioned the facets are in a diamond to optimize brilliance and sparkle. Following Blue Nile's Cut Grade Guide, the diamonds in our data set are graded, in ascending order of quality: Good, Very Good, Ideal, Astor Ideal.
+
+-   Good: Top 25% of diamond cut quality
+
+-   Very Good: Top 15% of diamond cut quality
+
+-   Ideal: Top 3% of diamond cut quality
+
+-   Astor: Certified and graded "best" cut
+
+<br>
+
+#### **Color:**
+
+The Gemological Institute of America (GIA) created an objective standardized scale of diamond color. The scale is defined by letters of the alphabet D(colorless) to Z(faint or lightly colored). Our data set only contains diamonds ranging from D to J. Blue Nile Color guide groups the letters for easy reference as such:
+
+-   D, E, F: colorless: rarest, have an icy look.
+
+-   G, H, I, J: Near colorless: No discernible color, but not completely colorless.
+
+<br>
+
+#### **Clarity:**
+
+Defines the overall assessment of imperfections on the surface (blemishes) and internal defects (inclusions) of a diamond. The less blemishes and inclusions the diamond possesses, the higher its grade on clarity. Following Blue Nile's Clarity Grade Guide, the diamonds in our data set are graded, in ascending order of quality:
+
+-   I1, I2, I3: Included (I): Obvious inclusions likely to be visible and impact beauty, identifiable with naked eye.
+
+-   SI1, SI2: Slightly Included (SI): Inclusions visible at 10x magnification, very hard to identify with naked eye, if at all.
+
+-   VS1, VS2: Very Slightly Included (VS): Minor inclusions only visible with 10x magnification, not visible with naked eye. With 10x magnified view inclusions range from difficult to somewhat easy to identify.
+
+-   VVS1, VVS2: Very, Very Slightly Included (VVS): Minuscule inclusions hard to identify even for trained diamond clarity graders using 10x magnification.
+
+-   IF: Internally Flawless (IF): Only surface blemishes may be visible, no inclusions. Surface blemishes are only visible under microscope, and these surface characteristics set the grade.
+
+-   FL: Flawless (FL): No inclusions or blemishes. Extremely rare, less than 1% of all diamonds.
+
+\*\*\*\*Note: For each class of clarity, the number identifies the ranking within its own class, 1 being the highest. For example, SI1 is a higher grade than SI2, but lower than VS2.\*\*\*\*
+
+<br>
+
+## **2.2 - Blue Nile Claims and Visualizations**
+
+Note: Please reference section 2.1 as needed for any information on variables shown below.
+
+The following subsection displays data visualizations to pull relationship insights between price and the variables, cut, color, clarity, and carat weight. This sub section 2.2 also contains data visualizations that help get a clearer picture of the relationship between the variables themselves. The goal is to use the Blue Nile dataset and the R-based data visualizations provided below to gain an understanding of the impact the variables have on price and how they can affect each other as well. Blue Nile marketing claims will also be addressed with the visualizations.
+
+<br>
+
+#### **Price related to Carat Weight**
+
+First, a price vs. carat scatterplot was constructed, shown in *Figure 1* below, to depict the relationship.
+
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+# Install useful packages
+library(tidyverse)
+library(MASS)
+library(scales)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Read the data files into R and store the datasets
+Data<-read.csv("diamonds4.csv")
+```
+
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+#Order clarity by ascending for visualization purposes
+Data$clarity<-factor(Data$clarity,
+levels=c("SI1","SI2","VS1","VS2", "VVS1", "VVS2", "IF", "FL"))
+levels(Data$clarity)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+## Plot Price and Carat
+ggplot(Data, aes(x=carat, y=price))+
+  geom_point(color="black")+
+  geom_smooth(method = "lm", se=FALSE, color="purple")+
+  labs(x="Carat", y="Price", title="Price vs. Carat Weight")+
+  scale_y_continuous(labels = label_comma())
+```
+
+<center>Figure 1: Price vs. Carat Weight</center>
+
+<br>
+
+Blue Nile claims to "buy shy" where it is recommended to buy diamonds that weigh slightly less than the closest half and whole number carat. Based on the fact that there are no constant steps in the pricing, and that the price vs. carat graph follows an exponential curve, this does not hold true.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+#ALL THE BUCKETING IS BELOW
+Data<-Data%>%
+  mutate(color_description=fct_collapse(color,colorless=c("D","E","F"),near_colorless=c("G","H", "I","J")))
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+Data<-Data%>%
+  mutate(clarity_description=fct_collapse(clarity,SI=c("SI1","SI2"),VS=c("VS1","VS2"),VVS=c("VVS1","VVS2"),IF_FL=c("IF","FL")))
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+Data<-Data%>%
+  mutate(carat_description=cut(carat, breaks = c(-Inf, 1, 2, Inf), labels = c("small", "medium", "large")))
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+Data<-Data%>%
+  mutate(price_carat = price/carat)
+```
+
+To more clearly depict that price per carat varies significantly based on carat weight, see *Figure 2*, a side-by-side box plot of price per carat across carat levels (small, medium, large).
+
+For Figures below: SMALL(0.0-1.0 CT), MEDIUM(1.01-2.0 CT), LARGE(2.01+ CT)
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+ggplot(Data, aes(x=carat_description, y=price_carat))+
+  geom_boxplot()+
+  labs(x="CARAT WEIGHT", y="PRICE PER CARAT", title="Price per Carat against Carat Weight")
+```
+
+<center>Figure 2: Price per Carat against Carat Weight</center>
+
+<br>
+
+As seen in *Figure 2*, the median price per carat increases as carat weight level increases. This also shows a customer receives more value with small carat diamond purchases. Interestingly this contradicts the regular convention, that the more product purchased in a transaction, the greater likelihood of a dollar per unit discount. For example in real estate, prices per square foot trends downward as total square foot increases.
+
+**Note:** Please reference section 3 for the reasoning behind log transformation of carat and price for the following scatterplot visualizations. This transformation process normalizes price vs. carat into a linear relationship, which we see shown as an exponential relationship in *Figure 1*. As a result, conclusions of how clarity, color, and cut affects the price vs carat relationship can be made from scatterplot visualizations for each variable, with fitted regression lines for each variable level.
+
+<br>
+
+#### **Price related to Cut and Carat Weight**
+
+An overview of cut's relationship to price and if it's affected by carat weight levels is depicted by *Figure 3* below.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+Data$cut<-factor(Data$cut,
+levels=c("Good", "Very Good", "Ideal", "Astor Ideal"))
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+ggplot(Data, aes(x=carat_description, y=price_carat, fill=cut))+
+  geom_boxplot()+
+  labs(x="CARAT WEIGHT", y="PRICE/CARAT", fill = "Cut Levels", title="Price per Carat across Carat Weights and Cuts")
+```
+
+<center>Figure 3: Price per Carat across Carat Weights and Cuts</center>
+
+<br>
+
+Blue Nile claims cut is the most important factor to a diamond's value. However, *Figure 3* shows cut is not impacting price as expected. For example in small carat weight levels, Good cut diamonds have a slightly higher median price than Very Good and Ideal cut diamonds. Another example is in medium weight diamonds, top tiered Astor ideal diamonds have a lower median price per carat than lower cut-grade Ideal diamonds.
+
+A scatterplot was constructed to compare the fitted SLR model's regression lines for each cut level, shown in *Figure 4*.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Transform the x and y variables with log to use for the visualizations
+ystar<-log(Data$price)
+Data<-data.frame(Data,ystar)
+xstar<-log(Data$carat)
+Data<-data.frame(Data,xstar)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+ggplot(Data, aes(x=xstar, y=ystar, size=carat, col=cut))+
+  geom_point(shape=21, alpha=0.5)+
+  geom_smooth(method = "lm", se = FALSE)+
+  scale_size(range = c(0.1,5))+
+  labs(x="Natural Log of Carat", y="Natural Log of Price", title="Scatterplot of ln(Price) against ln(Carat Weight) and Cut")
+```
+
+<center>Figure 4: Scatterplot of ln(Price) against ln(Carat Weight) and Cut</center>
+
+<br>
+
+The lm lines in *Figure 4* above, are very close together. More specifically the lm lines start out slightly separated by expected tiered cut level, and they align closer to the point of overlap as carat weight increases. This means the difference in slope, the change of price per unit increase of x, is similar across the lm lines for each cut. From this scatterplot, it can be concluded as the carat weight increases the cut has less and less impact on the diamond's price, refuting Blue Nile's claim.
+
+<br>
+
+#### **Price related to Carat Weight and Color**
+
+Blue Nile claims that diamonds that have colored hues of yellow are less expensive depending on the color grade severity. For *Figure 5* below, to get an overview understanding of color grades and their relationship to price per carat and carat weight, they were grouped further:
+
+Per Blue Nile Guide-\> Colorless(D, E, F) & Near Colorless(G, H, I, J).
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+ggplot(Data, aes(x=carat_description, y=price_carat, fill=color_description))+
+  geom_boxplot()+
+  labs(x="CARAT WEIGHT", y="PRICE/CARAT", fill = "color", title="Price per Carat across Carat Weights and Color")
+```
+
+<center>Figure 5: Price per Carat across Carat Weights and Color</center>
+
+<br>
+
+Blue Nile asserted colorless diamonds are rare and more expensive than diamonds that are not. Per *Figure 5*, Blue Nile's statement is visually supported. The median price of colorless diamonds for each carat weight is higher than the near colorless diamonds.
+
+In the grouped categories, Blue Nile's claim of colorless equals more value was determined as true. To further test the claim, a scatterplot comparing each color level's lm line of price vs carat is depicted below as *Figure 6*.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+## Plot log(price) against log(Carat) and Color
+ggplot(Data, aes(x=xstar, y=ystar, size=carat, col=color))+
+  geom_point(shape=21, alpha=0.5)+
+  geom_smooth(method = "lm", se = FALSE)+
+  scale_size(range = c(0.1,4))+
+  labs(x="ln(Carat)", y="ln(Price)", title="ln(Price) against ln(Carat) and Color")
+```
+
+<center>Figure 6: ln(Price) against ln(Carat) and Color</center>
+
+<br>
+
+In *Figure 6* above, Blue Nile's color claim holds generally true. The lower the carat weight it seems the less the color matters, but as you get to heavier diamonds, this does seem to be a significant factor. As carat weight increases, the lm lines start to separate more and stay in the correctly tiered color level. For example, the D lm line is the highest, and the J lm line is the lowest.
+
+<br>
+
+#### **Price related to Carat Weight and Clarity**
+
+Blue Nile claims that diamonds that have fewer blemishes and inclusions are more expensive. For *Figure 7* below, to get an overview understanding of clarity grades and their relationship to price per carat and carat weight, they were grouped further:
+
+Per Blue Nile Guide-\> ASCENDING ORDER OF QUALITY: SLIGHTLY INCLUDED(SI), VERY SLIGHTLY INCLUDED(VS), VERY VERY SLIGHT INCLUDED(VVS), INTERNALLY FLAWLESS AND FLAWLESS(IF AND FL).
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+ggplot(Data, aes(x=carat_description, y=price_carat, fill=as.factor(clarity_description)))+
+  geom_boxplot()+
+  labs(x="CARAT WEIGHT", y="PRICE/CARAT", fill = "clarity", title="Price per Carat across Carat Weight and Clarity")
+```
+
+<center>Figure 7: Price per Carat across Carat Weight and Clarity</center>
+
+<br>
+
+Blue Nile claims diamonds with the fewest inclusions, thus better clarity grades, receive higher price tags. As shown in *Figure 7*, this can be mostly supported since the median price per carat of flawless diamonds(IF and FL) is clearly higher than VVS, VS, and SI diamonds. Conversely, SI diamonds have the lowest median price per carat when compared to VS, VVS, IF and FL diamonds.
+
+In addition, *Figure 7* demonstrates among specifically medium and small diamonds that the difference in price per carat for VS and VVS diamonds is much closer than any other pair of clarity comparisons. This means our dataset does contradict the best value claim made by Blue Nile, that VI and SI diamonds are the best value for clarity. From inspection of the data visualization above, we can claim VVS small and VVS medium diamonds as best value for clarity. This is because VVS diamonds are similarly priced to lower ranked VS clarity grade, and inclusions are minimally identifiable even by trained diamond graders with 10x magnification.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+## Plot log(price) against Carat and Clarity
+ggplot(Data, aes(x=xstar, y=ystar, size=carat, col=clarity))+
+  geom_point(shape=21, alpha=0.25)+
+  geom_smooth(method = "lm", se = FALSE)+
+  scale_size(range = c(0.1,4))+
+  labs(x="Natural Log of Carat", y="Natural Log of Price", title="ln(Price) across ln(Carat) and Clarity")
+```
+
+<center>Figure 8: ln(Price) across ln(Carat) and Clarity</center>
+
+<br>
+
+Blue Nile also claims that clarity does not matter as much as cut or color, however, as shown in *Figure 8*, diamonds rated as flawless (FL) have clearly the highest price across all carat weights. Compared to the previous scatterplots, *Figure 6* and *Figure 4*, the lm lines had less separation across the different color and cut levels. This bigger delta in slope between the lm lines means there is a bigger step increase with clarity grade improvement than color or cut.
+
+<br>
+
+#### **Clarity Proportions and Carat vs. Clarity**
+
+After reviewing the relationship of the 4C's and price above, additional data visualizations were constructed below to investigate some of Blue Nile's claims on clarity.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+clarity_prop<-Data%>%
+  group_by(clarity)%>%
+  summarize(Counts=n())%>% 
+  mutate(Percent=Counts/nrow(Data))
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+ggplot(clarity_prop, aes(x=clarity, y=Percent))+geom_bar(stat=
+"identity"
+)+theme(axis.text.x = element_text(angle =
+90
+),plot.title = element_text(hjust =
+0.5
+))+labs(x=
+"Clarity"
+, y=
+"Percent of Diamonds"
+, title=
+"Proportions of Diamonds in Each Clarity"
+)
+```
+
+<center>Figure 9.a: Proportions of Diamonds in Each Clarity</center>
+
+<br>
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+mytab<-table(Data$clarity)
+round(prop.table(mytab)*100,2)
+```
+
+<center>Figure 9.b: Proportion Table for Clarity Grades (Percent Format)</center>
+
+<br>
+
+Blue Nile claims less than 1% of all diamonds are FL clarity. The proportion of flawless(FL) diamonds in our data is much less than all the other clarity grades, per *Figure 9.a*. The proportion of FL diamonds is only 0.25%, *Table 9.b*. So, our dataset does agree with Blue Nile's claim. Although the claim is likely intentionally vague in describing the scope i.e., whether it's referencing less than 1% all diamonds in nature, less than 1% all diamonds in the market, etc. We conclusively have evidence that FL diamonds are quite rare based on the amount of FL diamonds found in this dataset. (assuming this dataset is indicative of the overall population of diamonds for sale).
+
+Blue Nile also claims diamond shape and size can affect clarity. To determine whether carat weight has effect on clarity, the proportion of clarity was compared across carat weights. The carat weights were separated by ranges, defined by the caratband legend in *Figure 10* below.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+Data<-Data%>%
+mutate(caratband=case_when(carat<=1 ~ '0-1',
+carat<=2 ~ '1-2',
+carat <= 3 ~ '2-3',
+carat <= 4 ~ '3-4',
+carat <= 5 ~ '4-5',
+carat <= 6 ~ '5-6',
+carat <= 7 ~ '6-7',
+carat <= 8 ~ '7-8',
+TRUE ~ 'Above 8'))
+```
+
+```{r, include=FALSE, echo=FALSE, message=FALSE, warning=FALSE}
+mytab2<-table(Data$clarity, Data$caratband)
+round(prop.table(mytab2,1)*100,2)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+ggplot(Data, aes(x=clarity, fill=caratband))+
+geom_bar(position = "fill")+
+labs(x="Clarity", y="Proportion",
+title="Proportion of Carat Band by Clarity")
+```
+
+<center>Figure 10: Proportion of Carat Band by Clarity</center>
+
+<br>
+
+According to *Figure 10*, there does not seem to be a significant relationship between carat size and clarity level. Each clarity level contains a similar breakout of carat sizes. Flawless diamonds are the exception, but there are only 3 flawless diamonds in the data set. This is likely driving the proportional difference for flawless diamonds compared to the other clarity ratings. In our dataset, there is no support of Blue Nile's claim that diamond size affects clarity.
+
+<br>
+
+# Section 3
+
+### Simple Linear Regression of Price and Carat
+
+Before we begin building our model, we want to first get a better understanding of the relationship between carat and price. By plotting the two variables against each other (*Figure 11*), we can already get an idea for whether or not the assumptions for linear regression are going to be met. There is a positive relationship between the two variables, as we can see an upward trend on the plot, however the data points curve upward and seem to get further apart from one another as we move from left to right, or from smaller to larger carat weight. This takes the shape of a potential exponential function. To confirm our suspicions regarding the linearity and variance assumptions, we want to fit a linear model and plot the residuals.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Set levels for the categorical data
+## Set levels for Cut
+Data$cut<-factor(Data$cut,
+                 levels=c("Good", "Very Good", "Ideal", "Astor Ideal"))
+
+## Set levels for Clarity
+Data$clarity<-factor(Data$clarity,
+                     levels=c("SI1", "SI2", "VS1", "VS2", "VVS1", "VVS2", "IF", "FL"))
+
+## Set levels for Color
+Data$color<-factor(Data$color,
+                   levels=c("J", "I", "H", "G", "F", "E", "D"))
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+# Plot Price and Carat
+ggplot(Data, aes(x=carat, y=price))+
+  geom_point(color="black")+
+  geom_smooth(method = "lm", se=FALSE, color="purple")+
+  labs(x="Carat", y="Price", title="Scatter Plot of Carat versus Price")+
+  scale_y_continuous(labels = label_comma())
+```
+
+<center>Figure 11: Scatter Plot of Carat versus Price</center>
+
+<br>
+
+The residuals plot (*Figure 12*) shows consistency with our original thoughts that the relationship between carat and price is not only non-linear, but also does not have constant variance. Since that Assumption 1 and 2 are both not met, we will need to transform the y variable (i.e. price, response variable), to see if this will be sufficient to meet the assumptions or if we will need to do an additional transformation on the x variable (i.e. carat, predictor) to address the growing variance from left to right. To do this, we will first generate a Boxcox plot to determine how we might transform the y variable.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+result<-lm(price~carat, data=Data)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+# Plot the Residuals of the linear model
+
+##store fitted y & residuals
+yhat<-result$fitted.values
+res<-result$residuals
+
+##add to data frame
+resData<-data.frame(Data,yhat,res)
+
+##residual plot
+ggplot(resData, aes(x=yhat,y=res))+
+  geom_point()+
+  geom_hline(yintercept=0, color="purple")+
+  labs(x="Fitted y", y="Residuals", title="Residuals Plot for Carat and Price")
+```
+
+<center>Figure 12: Residuals Plot for Carat and Price</center>
+
+<br>
+
+The Boxcox plot (*Figure 13*) gives a 95% interval between roughly 0.29 and 0.35 for a $\lambda$ value. After trying $\lambda = 0.32$ for a transformation of $y^* = y^{0.32}$, we end up with a plot that is still not quite linear and does not reduce the increasing variance, which means we need a different transformation for our y before we can move on. Given that the $\lambda$ recommended by the Boxcox is already close to 0, and the interpretability and simplicity of the model would be far greater, we can try a natural log transformation to see if this improves the linearity.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+## Look at the BoxCox plot to see how we may transform the predictor
+boxcox(result, lambda = seq(.2, .4, 1/100))
+```
+
+<center>Figure 13: Boxcox Plot for Carat and Price</center>
+
+<br>
+
+The residuals plot (*Figure 14*) for the transformed y variable, $y^*$, shows a drastic improvement to the variance consistency, so this assumption can be considered met. The plot is still showing an obvious lack of linearity, and points are not evenly scattered on both sides of the residual line as we move from left to right. We will need to transform the x variable in addition to the already transformed y variable, $y^*$. Given that this plot looks to have a natural log shaped curve, we should first try transforming the x variable using log.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+# Transform y using log
+ystar<-log(Data$price)
+Data<-data.frame(Data,ystar)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+result2<-lm(ystar~carat, data=Data)
+
+##store fitted y & residuals
+yhat2<-result2$fitted.values
+res2<-result2$residuals
+
+##add to data frame
+resData2<-data.frame(Data,yhat2,res2)
+
+##residual plot
+ggplot(resData2, aes(x=yhat2,y=res2))+
+  geom_point()+
+  geom_hline(yintercept=0, color="purple")+
+  labs(x="Fitted y", y="Residuals", title="Residuals Plot for Carat and Fitted Price")
+```
+
+<center>Figure 14: Residuals Plot for Carat and Fitted Price</center>
+
+<br>
+
+The scatter plot (*Figure 15*), and the residuals plot (*Figure 16*), of both log-transformed variables $y^*$ and $x^*$ seem to show both a strong linear relationship as well as constant variance from left to right. With this we can generate an ACF plot to see if our model meets the independent observations assumption, and a QQ plot to see if it meets the normality assumption.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE}
+# Transform the x variable with log
+xstar<-log(Data$carat)
+Data<-data.frame(Data,xstar)
+```
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+# Plot the new log(y) and log(x) against each other
+
+ggplot(Data, aes(x=xstar,y=ystar))+
+  geom_point()+
+  geom_smooth(method = "lm", se=FALSE, color="purple")+
+  labs(x="Natural Log Carat", y="Natural Log Price", title="Scatter Plot for Natural Log Carat and Natural Log Price")
+```
+
+<center>Figure 15: Scatter Plot for Natural Log Carat and Natural Log Price</center>
+
+<br>
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+# Create a new linear model and plot the residuals
+
+result3<-lm(ystar~xstar, data=Data)
+
+##store fitted y & residuals
+yhat3<-result3$fitted.values
+res3<-result3$residuals
+
+##add to data frame
+resData3<-data.frame(Data,yhat3,res3)
+
+##residual plot
+ggplot(resData3, aes(x=yhat3,y=res3))+
+  geom_point()+
+  geom_hline(yintercept=0, color="purple")+
+  labs(x="Fitted y", y="Residuals", title="Residuals Plot for Fitted Carat and Fitted Price")
+```
+
+<center>Figure 16: Residuals Plot for Fitted Carat and Fitted Price</center>
+
+<br>
+
+From the ACF plot (*Figure 17*) we can say that the residuals are mostly uncorrelated, so we don't have much evidence to say that the errors are dependent. It is worth noting around the 4 mark, our graph slightly passes the ACF dotted boundary. This is likely attributed to the slightly elevated residuals seen on the far left of *Figure 16*. That being said, it is a one off case, and we can more or less ignore this. The QQ plot (*Figure 18*) shows that the plots fall fairly closely to the line. There is more deviation on the ends than would be preferred, however, they do not seem to stray away significantly. From this we can conclude the residuals follow a normal distribution. Lastly, we will want to get the formula for our model and interpret its meaning for the relationship between Carat and Price.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+# Generate an ACF plot
+acf(res3)
+```
+
+<center>Figure 17: ACF Plot for Residuals</center>
+
+<br>
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+# Generate a Normal Q-Q Plot
+qqnorm(res3)
+qqline(res3, col="purple")
+```
+
+<center>Figure 18: QQ Plot for Residuals</center>
+
+<br>
+
+The simple linear regression equation we get when looking at the model summary (*Figure 19*) is the following:
+
+<br>
+
+$y^∗ = 8.521 + 1.944x^∗$, where $y^∗ = log(y), x^∗ = log(x)$ [1]
+
+<br>
+
+Since both variables were log transformed, we know that the relationship between carat and price is that for every 1% increase in carat, the price of the diamond increases by approximately 1.944%.
+
+```{r, echo=FALSE, message=FALSE, warning=FALSE, fig.align = 'center'}
+## Get the formula
+summary(result3)
+```
+
+<center>Figure 19: Table of SLR Model Summary</center>
